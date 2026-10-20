@@ -1,6 +1,31 @@
 # Changelog (English)
 
 
+## [Unreleased]
+### 🔧 One gateway on Windows
+
+- **No Scheduled Task for the gateway on Windows.** Since OpenClaw 2026.8, `openclaw daemon install`
+  registers an `ai.openclaw.gateway.<name>` task that starts a gateway, while "1 - KHOI DONG BOT" starts
+  one too. The two fight over the state database: on 20/10/2026 a zalo-connect install ran 324s and
+  aborted ("config changed since last load"), and the Zalo QR login failed with
+  "Unsupported channel zalo-connect". The first boot now goes through the same launcher as every
+  restart.
+- **Existing installs heal themselves.** Every Setup restart removes the old task (and the Startup-folder
+  entry, if any). Deleting a project removes it too.
+
+### 🖥️ One "Bot OpenClaw" icon on the Desktop
+
+- **A control panel instead of four loose files.** The Desktop now holds one icon with the OpenClaw
+  logo. Double-clicking it opens a small window with green/red status for the bot, the Zalo dashboard,
+  9Router and the setup UI (refreshed every 3s), plus Start bot, Open setup UI, Stop bot (asks first)
+  and Help buttons. A second double-click brings the open window forward instead of stacking another.
+- The buttons run the same three `.cmd` files in the project folder, so starting and stopping work as
+  before, and double-clicking those files directly still works.
+- The four old Desktop files are removed on install or restart, but only when they are recognisably
+  Setup's own; an owner's file with the same name is kept. The Desktop path is asked from Windows,
+  so OneDrive-redirected Desktops get the icon too.
+
+
 ## [5.18.3] - 2026-10-16
 ### 🔧 Bots on native installs can send files again
 

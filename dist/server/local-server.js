@@ -16,7 +16,7 @@ function loadSharedModule(modulePath, globalName) {
 const { buildWorkspaceFileMap, buildCronjobSkillMd, buildInfographicGeneratorSkillMd, buildInfographicGeneratorJs } = loadSharedModule('../setup/shared/workspace-gen.js', '__openclawWorkspace');
 const { buildOpenclawJson, buildEnvFileContent, buildExecApprovalsJson, buildZaloConnectChannelConfig } = loadSharedModule('../setup/shared/bot-config-gen.js', '__openclawBotConfig');
 const { buildDockerArtifacts, contextDefaultsScript } = loadSharedModule('../setup/shared/docker-gen.js', '__openclawDockerGen');
-const { buildWindowsLaunchers, WINDOWS_DESKTOP_LAUNCHERS } = loadSharedModule('../setup/shared/windows-launcher-gen.js', '__openclawWindowsLaunchers');
+const { buildWindowsLaunchers, WINDOWS_DESKTOP_LAUNCHERS, WINDOWS_PANEL_SHORTCUT } = loadSharedModule('../setup/shared/windows-launcher-gen.js', '__openclawWindowsLaunchers');
 const { OPENCLAW_NPM_SPEC, NINE_ROUTER_NPM_SPEC, ZALO_CHANNEL_ID, ZALO_PLUGIN_ID, ZALO_CONNECT_VERSION, ZALO_CONNECT_PLUGIN_SPEC, build9RouterProviderConfig, get9RouterBaseUrl } = loadSharedModule('../setup/shared/common-gen.js', '__openclawCommon');
 const dataExport = loadSharedModule('../setup/data/index.js', '__openclawData');
 
@@ -3500,6 +3500,41 @@ async function runOpenclawDoctorFixIfNeeded(projectDir) {
 }
 
 /**
+ * Windows runs the gateway from gateway-start.cmd ONLY (windows-launcher-gen.js). On the >=2026.8 layout
+ * (prepareNativeStateHome moves state to ~/.openclaw) `openclaw daemon install` no longer refuses: it
+ * registers an at-logon Scheduled Task (gateway.vbs -> gateway.cmd --task-supervisor), a SECOND launcher
+ * for the same state dir. It races the gateway "1 - KHOI DONG BOT" starts; the loser waits 300s on the
+ * state lease and dies, or exits at once ("Another gateway (pid N) already owns this state directory").
+ * Measured on a fresh install 20/10/2026: the two gateways locked SQLite, a zalo-connect
+ * `plugins install` ran 324s and aborted with "config changed since last load", and the QR login then
+ * failed with "Unsupported channel zalo-connect". Remove the registration (task + the Startup-folder
+ * entry OpenClaw falls back to when schtasks is denied); a gateway it already started is handled by
+ * the caller.
+ */
+async function removeWindowsGatewayTask(projectDir) {
+  if (process.platform !== 'win32') return false;
+  const label = nativeServiceLabel(projectDir);
+  let removed = false;
+  const found = await runCapture('schtasks', ['/Query', '/TN', label], { shell: false, timeout: 15000 }).catch(() => ({ code: 1 }));
+  if (found.code === 0) {
+    const del = await runCapture('schtasks', ['/Delete', '/TN', label, '/F'], { shell: false, timeout: 15000 }).catch(() => ({ code: 1 }));
+    removed = del.code === 0;
+    sendLog(removed
+      ? `[native] Đã gỡ Scheduled Task "${label}" (nó tự bật gateway thứ hai lúc đăng nhập).`
+      : `[native] Không gỡ được Scheduled Task "${label}": ${String(del.stderr || del.stdout || '').trim().slice(0, 160)}`);
+  }
+  const startupDir = join(process.env.APPDATA || join(getRealHomedir(), 'AppData', 'Roaming'), 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'Startup');
+  for (const ext of ['cmd', 'vbs']) {
+    const entry = join(startupDir, `${label}.${ext}`);
+    if (!existsSync(entry)) continue;
+    await fsp.rm(entry, { force: true }).catch(() => {});
+    sendLog(`[native] Đã gỡ mục tự chạy ${entry} (gateway thứ hai lúc đăng nhập).`);
+    removed = true;
+  }
+  return removed;
+}
+
+/**
  * Restart the gateway on Windows the way the double-click launcher starts it.
  *
  * Stops the running gateway process, then relaunches `gateway-start.cmd` through `run-hidden.vbs`
@@ -3523,6 +3558,8 @@ async function restartWindowsGateway(projectDir) {
     ).catch((e) => sendLog(`[native] không tạo được launcher: ${e.message}`));
   }
   if (!existsSync(vbs) || !existsSync(cmd)) return false;
+  // The launcher is about to own the gateway: heal installs that still carry the at-logon task.
+  await removeWindowsGatewayTask(projectDir);
 
   const meta = readNativeMeta(projectDir) || {};
   const port = meta.gatewayPort || state.gatewayPort || NATIVE_DEFAULT_GATEWAY_PORT;
@@ -4562,9 +4599,9 @@ async function stopNodeHost() {
 }
 
 /**
- * Write the double-click launchers into the project and copy the operator-facing ones to the
- * Desktop. Safe to re-run: it overwrites, so a fixed launcher reaches machines on the next
- * install or update instead of leaving the customer pressing a stale copy.
+ * Write the double-click launchers into the project and put ONE "Bot OpenClaw" icon on the Desktop
+ * (the control panel, see buildBotPanelPs1). Safe to re-run: it overwrites, so a fixed launcher
+ * reaches machines on the next install or update instead of leaving the customer pressing a stale copy.
  */
 async function writeWindowsLaunchers(projectDir, gatewayPort, routerPort) {
   // node-host.cmd needs the gateway token baked in: the node authenticates with it, and without
@@ -4582,13 +4619,44 @@ async function writeWindowsLaunchers(projectDir, gatewayPort, routerPort) {
   for (const [name, content] of Object.entries(files)) {
     await fsp.writeFile(join(projectDir, name), content, 'utf8');
   }
-  const desktop = join(os.homedir(), 'Desktop');
-  if (existsSync(desktop)) {
-    for (const name of WINDOWS_DESKTOP_LAUNCHERS) {
-      await fsp.writeFile(join(desktop, name), files[name], 'utf8').catch(() => {});
-    }
-    sendLog(`[native] Đã đặt ${WINDOWS_DESKTOP_LAUNCHERS.length} tệp bấm-đúp lên Desktop.`);
+  await fsp.copyFile(join(WEB_DIR, 'bot.ico'), join(projectDir, 'bot.ico')).catch(() => {});
+  await placeWindowsPanelShortcut(projectDir, files).catch((e) => sendLog(`[native] biểu tượng Desktop: ${e.message}`));
+}
+
+/**
+ * One Desktop shortcut to the control panel, replacing the four loose files older builds copied
+ * there. The Desktop is asked from Windows rather than assumed at ~/Desktop: OneDrive moves it.
+ * A legacy copy is only removed when it is recognisably ours (same content as what this build
+ * generates, or a launcher anchored on this project), so an owner's own file of the same name stays.
+ */
+async function placeWindowsPanelShortcut(projectDir, files) {
+  // UTF-8 out: the default OEM code page mangles a Desktop path with Vietnamese letters.
+  const asked = await runCapture('powershell', ['-NoProfile', '-Command',
+    "[Console]::OutputEncoding = [Text.Encoding]::UTF8; [Environment]::GetFolderPath('Desktop')"], { shell: false, timeout: 15000 }).catch(() => ({}));
+  const desktop = String(asked.stdout || '').trim() || join(os.homedir(), 'Desktop');
+  if (!existsSync(desktop)) return false;
+  for (const name of WINDOWS_DESKTOP_LAUNCHERS) {
+    const old = join(desktop, name);
+    const text = await fsp.readFile(old, 'utf8').catch(() => null);
+    if (text == null) continue;
+    const ours = text === files[name] || text.includes(`cd /d ${projectDir}`) || text.startsWith('BOT OPENCLAW TREN MAY NAY');
+    if (ours) await fsp.rm(old, { force: true }).catch(() => {});
   }
+  const q = (s) => String(s).replace(/'/g, "''");
+  const lnk = join(desktop, WINDOWS_PANEL_SHORTCUT);
+  const ps = [
+    `$s = (New-Object -ComObject WScript.Shell).CreateShortcut('${q(lnk)}')`,
+    "$s.TargetPath = Join-Path $env:SystemRoot 'System32\\wscript.exe'",
+    `$s.Arguments = '"${q(join(projectDir, 'bot-panel.vbs'))}"'`,
+    `$s.WorkingDirectory = '${q(projectDir)}'`,
+    `$s.IconLocation = '${q(join(projectDir, 'bot.ico'))},0'`,
+    "$s.Description = 'Bang dieu khien bot OpenClaw'",
+    '$s.Save()',
+  ].join('; ');
+  const out = await runCapture('powershell', ['-NoProfile', '-Command', ps], { shell: false, timeout: 20000 });
+  if (out.code !== 0 || !existsSync(lnk)) throw new Error(String(out.stderr || out.stdout || 'không tạo được shortcut').trim().slice(0, 200));
+  sendLog(`[native] Đã đặt biểu tượng "Bot OpenClaw" lên Desktop (${desktop}).`);
+  return true;
 }
 
 /**
@@ -4804,8 +4872,8 @@ async function startNativeRuntime({ projectDir, osChoice = '', gatewayPort, rout
   // Windows has no usable service story for this (see windows-launcher-gen.js): the Scheduled
   // Task openclaw installs is bound to a login session, so it dies with the SSH session and is
   // refused outright when set to run at boot. Give the owner double-click launchers instead -
-  // the same shape as the .command files on macOS - and put the three they actually press on
-  // the Desktop where they can find them.
+  // the same shape as the .command files on macOS - and put one "Bot OpenClaw" icon on the
+  // Desktop that opens a panel with those buttons.
   if (process.platform === 'win32') {
     await writeWindowsLaunchers(projectDir, gwPort, rtPort).catch((e) => sendLog(`[native] launcher: ${e.message}`));
   }
@@ -4852,7 +4920,13 @@ async function startNativeRuntime({ projectDir, osChoice = '', gatewayPort, rout
   // leave a symlink (junction on Windows) at <project>/.openclaw, then install with the
   // plain account HOME. Older runtimes keep the original env untouched.
   const daemonEnv = await prepareNativeStateHome(projectDir).catch((e) => { sendLog(`[native] state-home prep skipped: ${e.message}`); return null; });
-  if (daemonEnv) {
+  if (process.platform === 'win32') {
+    // No service on Windows: on the >=2026.8 layout `daemon install` succeeds and registers an
+    // at-logon Scheduled Task that starts a second gateway (see removeWindowsGatewayTask). First boot
+    // goes through the same launcher as every restart; restartWindowsGateway also rewrites the
+    // launchers, which were written before the state move above.
+    await restartWindowsGateway(projectDir);
+  } else if (daemonEnv) {
     await run('openclaw', ['daemon', 'install', '--force', '--port', String(gwPort)], { cwd: projectDir, env: daemonEnv });
   } else {
     await run('openclaw', ['daemon', 'install', '--force', '--port', String(gwPort)], { cwd: projectDir, env });
@@ -4889,6 +4963,8 @@ async function removeNativeRuntime(projectDir) {
   if (!isNativeProject(projectDir)) return false;
   const env = nativeEnv(projectDir);
   await run('openclaw', ['daemon', 'uninstall'], { cwd: projectDir, env }).catch((e) => sendLog(`[native] daemon uninstall: ${e.message}`));
+  // `daemon uninstall` carries OPENCLAW_HOME, which >=2026.8 refuses - remove a leftover task directly.
+  await removeWindowsGatewayTask(projectDir).catch(() => {});
   // The 9router systemd unit has Restart=always: killing the listener alone brings it (or an
   // orphaned child) back, the port stays busy, and the NEXT install silently forks off to a
   // new router port that no ssh tunnel or oc-web table points at (measured 03/09/2026).

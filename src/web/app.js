@@ -370,7 +370,7 @@ function openComputerUseModal(r = {}) {
       ${permBlock}
       <p class="cu-note">${t('Cách dùng: nhắn bot bình thường, ví dụ “chụp màn hình cho anh xem” hoặc “mở TeamViewer rồi đọc mật khẩu trên màn hình”.','How to use it: just ask your bot normally, e.g. "take a screenshot" or "open TeamViewer and read the password on screen".')}</p>
       <p class="cu-note">${t('Chỉ dùng được trên máy có màn hình. Máy chủ VPS không màn hình thì không áp dụng. Tắt nút này là thu hồi lại toàn bộ quyền trên.','Only works on a machine with a screen. A headless VPS cannot use this. Turning the switch off revokes all of it.')}</p>
-      <p class="cu-note">${t('Sau khi khởi động lại máy, bấm <b>"1 - KHOI DONG BOT"</b> là phần điều khiển máy cũng tự bật lại cùng bot.','After restarting the machine, pressing <b>"1 - KHOI DONG BOT"</b> brings computer control back up along with the bot.')}</p>
+      <p class="cu-note">${t('Sau khi khởi động lại máy, mở biểu tượng <b>Bot OpenClaw</b> trên Desktop và bấm <b>"Khởi động bot"</b> là phần điều khiển máy cũng tự bật lại cùng bot.','After restarting the machine, open the <b>Bot OpenClaw</b> icon on the Desktop and press <b>"Khởi động bot"</b>: computer control comes back up along with the bot.')}</p>
     `,
     okText: t('Đã hiểu','Got it'),
     okDanger: false,

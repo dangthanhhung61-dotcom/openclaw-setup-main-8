@@ -1,6 +1,31 @@
 # Changelog (Tiếng Việt)
 
 
+## [Chưa phát hành]
+### 🔧 Windows chỉ còn một gateway
+
+- **Không tạo Scheduled Task cho gateway trên Windows nữa.** Từ OpenClaw 2026.8, `openclaw daemon install`
+  đăng ký tác vụ `ai.openclaw.gateway.<tên>` tự bật gateway, trong khi "1 - KHOI DONG BOT" cũng bật
+  một gateway. Hai gateway giành nhau cơ sở dữ liệu: ghi nhận ngày 20/10/2026, lệnh cài zalo-connect
+  chạy 324 giây rồi tự huỷ ("config changed since last load"), và quét QR Zalo báo
+  "Unsupported channel zalo-connect". Nay lần bật đầu tiên đi qua đúng launcher như mọi lần khởi
+  động lại.
+- **Bot đã cài tự sửa.** Mỗi lần Setup khởi động lại bot, tác vụ cũ (và mục tự chạy trong thư mục
+  Startup, nếu có) được gỡ. Xoá dự án cũng gỡ luôn tác vụ.
+
+### 🖥️ Một biểu tượng "Bot OpenClaw" trên Desktop
+
+- **Bảng điều khiển thay cho bốn tệp rời.** Desktop chỉ còn một biểu tượng mang logo OpenClaw. Bấm
+  đúp mở một cửa sổ nhỏ: đèn xanh/đỏ cho bot, bảng điều khiển Zalo, 9Router và giao diện quản trị
+  (tự cập nhật 3 giây một lần), cùng các nút Khởi động bot, Mở giao diện quản trị, Dừng bot (có hỏi
+  lại trước khi dừng) và Hướng dẫn. Bấm đúp lần nữa thì đưa cửa sổ đang mở lên trước, không mở thêm.
+- Các nút chạy đúng ba tệp `.cmd` cũ trong thư mục dự án, nên cách bật/tắt bot không đổi. Bấm đúp
+  trực tiếp các tệp đó vẫn được.
+- Bốn tệp cũ trên Desktop được dọn khi cài hoặc khởi động lại, nhưng chỉ khi đúng là tệp do Setup
+  tạo; tệp riêng của chủ máy trùng tên được giữ nguyên. Desktop được hỏi từ Windows, nên máy dùng
+  OneDrive cũng đặt đúng chỗ.
+
+
 ## [5.18.3] - 2026-10-16
 ### 🔧 Bot cài trực tiếp trên máy gửi được tệp trở lại
 

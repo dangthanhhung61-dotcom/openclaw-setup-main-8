@@ -205,17 +205,21 @@ function buildReadme({ projectDir, gatewayPort, routerPort, setupPort }) {
   return CRLF(
     'BOT OPENCLAW TREN MAY NAY - HUONG DAN NHANH\n' +
     '===========================================\n\n' +
-    'Ba tep .cmd, bam dup la chay. Khong can go lenh.\n\n' +
-    '  1 - KHOI DONG BOT.cmd     Bat bot len. Bam sau moi lan khoi dong may.\n' +
-    '  2 - MO GIAO DIEN.cmd      Mo trang quan tri bot trong trinh duyet.\n' +
-    '  3 - DUNG BOT.cmd          Tat bot (chi dung khi can).\n\n' +
+    'Tren Desktop co bieu tuong "Bot OpenClaw". Bam dup de mo bang dieu khien:\n' +
+    'bang hien bot dang chay hay tat, va co san cac nut ben duoi.\n\n' +
+    '  Khoi dong bot             Bat bot len. Bam sau moi lan khoi dong may.\n' +
+    '  Mo giao dien quan tri     Mo trang quan tri bot trong trinh duyet.\n' +
+    '  Dung bot                  Tat bot (chi dung khi can).\n\n' +
+    'Cac nut nay chay ba tep .cmd trong ' + projectDir + ' - bam dup truc tiep cung duoc:\n' +
+    '  1 - KHOI DONG BOT.cmd, 2 - MO GIAO DIEN.cmd, 3 - DUNG BOT.cmd\n\n' +
     'QUAN TRONG\n' +
     '----------\n' +
     '- Bot chay AN hoan toan: khong co cua so den nao nam tren man hinh.\n' +
     '- Bot KHONG tu chay khi bat may. Sau moi lan khoi dong lai may,\n' +
     '  bam "1 - KHOI DONG BOT" mot lan la xong.\n' +
     '- Bot se tat khi ban DANG XUAT hoac TAT may.\n' +
-    '- Dat cac tep nay o dau cung duoc, chung deu neo ve ' + projectDir + '.\n\n' +
+    '- Mat bieu tuong tren Desktop? Bam dup bot-panel.vbs trong ' + projectDir + ',\n' +
+    '  hoac mo lai giao dien quan tri, bieu tuong se duoc tao lai.\n\n' +
     'Cong dang dung:\n' +
     `  ${gatewayPort}  bot (gateway)\n` +
     `  ${gatewayPort + 1}  bang dieu khien Zalo\n` +
@@ -224,10 +228,150 @@ function buildReadme({ projectDir, gatewayPort, routerPort, setupPort }) {
   );
 }
 
+/**
+ * The one Desktop icon: a small window with live status and the three launcher buttons.
+ *
+ * Four loose files on the Desktop (readme + three .cmd) looked like stray scripts and had the generic
+ * gear icon, so owners could not tell which one was the bot. The panel only RUNS those same .cmd
+ * files from the project folder - start/stop logic stays in one place and the traps above still
+ * apply. Status comes from the listening ports (GetActiveTcpListeners: no CIM, so it does not stall
+ * the window), refreshed every 3s.
+ *
+ * Written with a UTF-8 BOM: Windows PowerShell 5.1 reads a BOM-less .ps1 as ANSI and the Vietnamese
+ * labels turn into mojibake. No PowerShell backticks anywhere - this is a JS template.
+ */
+function buildBotPanelPs1({ gatewayPort, routerPort, setupPort }) {
+  const lines = [
+    '# Bang dieu khien bot OpenClaw - do openclaw-setup tao, moi lan cai/cap nhat se ghi de.',
+    "$ErrorActionPreference = 'SilentlyContinue'",
+    '$dir = $PSScriptRoot',
+    '$created = $false',
+    `$mutex = New-Object System.Threading.Mutex($true, 'OpenClawBotPanel-${gatewayPort}', [ref]$created)`,
+    // Second double-click: bring the open panel forward instead of stacking another one.
+    "if (-not $created) { (New-Object -ComObject WScript.Shell).AppActivate('Bot OpenClaw') | Out-Null; exit }",
+    'Add-Type -AssemblyName System.Windows.Forms, System.Drawing',
+    '[System.Windows.Forms.Application]::EnableVisualStyles()',
+    '',
+    '$services = @(',
+    `  @{ Name = 'Bot (gateway)'; Port = ${gatewayPort} },`,
+    `  @{ Name = 'Bảng điều khiển Zalo'; Port = ${gatewayPort + 1} },`,
+    `  @{ Name = '9Router'; Port = ${routerPort} },`,
+    `  @{ Name = 'Giao diện quản trị'; Port = ${setupPort} }`,
+    ')',
+    '',
+    '$form = New-Object System.Windows.Forms.Form',
+    "$form.Text = 'Bot OpenClaw'",
+    "$form.StartPosition = 'CenterScreen'",
+    "$form.FormBorderStyle = 'FixedSingle'",
+    '$form.MaximizeBox = $false',
+    '$form.ClientSize = New-Object System.Drawing.Size(340, 386)',
+    "$form.Font = New-Object System.Drawing.Font('Segoe UI', 10)",
+    '$form.BackColor = [System.Drawing.Color]::White',
+    "$icoPath = Join-Path $dir 'bot.ico'",
+    'if (Test-Path $icoPath) { $form.Icon = New-Object System.Drawing.Icon($icoPath) }',
+    '',
+    '$title = New-Object System.Windows.Forms.Label',
+    "$title.Text = 'Bot OpenClaw'",
+    "$title.Font = New-Object System.Drawing.Font('Segoe UI Semibold', 15)",
+    '$title.AutoSize = $true',
+    '$title.Location = New-Object System.Drawing.Point(18, 12)',
+    '$form.Controls.Add($title)',
+    '$where = New-Object System.Windows.Forms.Label',
+    '$where.Text = $dir',
+    '$where.ForeColor = [System.Drawing.Color]::Gray',
+    '$where.AutoEllipsis = $true',
+    '$where.Size = New-Object System.Drawing.Size(300, 22)',
+    '$where.Location = New-Object System.Drawing.Point(21, 44)',
+    '$form.Controls.Add($where)',
+    '',
+    '$rows = @()',
+    '$y = 78',
+    'foreach ($s in $services) {',
+    '  $dot = New-Object System.Windows.Forms.Panel',
+    '  $dot.Size = New-Object System.Drawing.Size(12, 12)',
+    '  $dot.Location = New-Object System.Drawing.Point(24, ($y + 5))',
+    '  $dot.BackColor = [System.Drawing.Color]::Silver',
+    '  $name = New-Object System.Windows.Forms.Label',
+    '  $name.Text = $s.Name',
+    '  $name.AutoSize = $true',
+    '  $name.Location = New-Object System.Drawing.Point(44, $y)',
+    '  $stateLabel = New-Object System.Windows.Forms.Label',
+    "  $stateLabel.Text = '...'",
+    "  $stateLabel.TextAlign = 'MiddleRight'",
+    '  $stateLabel.Size = New-Object System.Drawing.Size(110, 22)',
+    '  $stateLabel.Location = New-Object System.Drawing.Point(208, ($y - 1))',
+    '  $form.Controls.AddRange(@($dot, $name, $stateLabel))',
+    '  $rows += @{ Port = $s.Port; Dot = $dot; State = $stateLabel }',
+    '  $y += 28',
+    '}',
+    '',
+    'function Update-Status {',
+    '  $open = @([System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().GetActiveTcpListeners() | ForEach-Object { $_.Port })',
+    '  foreach ($r in $rows) {',
+    '    if ($open -contains $r.Port) {',
+    '      $r.Dot.BackColor = [System.Drawing.Color]::FromArgb(34, 160, 80)',
+    "      $r.State.Text = 'Đang chạy'",
+    '      $r.State.ForeColor = [System.Drawing.Color]::FromArgb(34, 130, 70)',
+    '    } else {',
+    '      $r.Dot.BackColor = [System.Drawing.Color]::FromArgb(200, 60, 60)',
+    "      $r.State.Text = 'Tắt'",
+    '      $r.State.ForeColor = [System.Drawing.Color]::FromArgb(170, 50, 50)',
+    '    }',
+    '  }',
+    '}',
+    '',
+    // Same as double-clicking the file: its own console shows progress, cwd is the project.
+    'function Start-Launcher($file) {',
+    '  $path = Join-Path $dir $file',
+    '  if (Test-Path $path) { Start-Process -FilePath $path -WorkingDirectory $dir }',
+    "  else { [System.Windows.Forms.MessageBox]::Show(('Không tìm thấy ' + $file + ' trong ' + $dir), 'Bot OpenClaw') | Out-Null }",
+    '}',
+    '',
+    '$buttons = @(',
+    "  @{ Text = 'Khởi động bot'; Bold = $true; Click = { Start-Launcher '1 - KHOI DONG BOT.cmd' } },",
+    "  @{ Text = 'Mở giao diện quản trị'; Bold = $false; Click = { Start-Launcher '2 - MO GIAO DIEN.cmd' } },",
+    "  @{ Text = 'Dừng bot'; Bold = $false; Click = {",
+    "      $ans = [System.Windows.Forms.MessageBox]::Show('Dừng bot? Bot sẽ không trả lời tin nhắn cho tới khi bấm Khởi động bot.', 'Bot OpenClaw', 'YesNo', 'Question')",
+    "      if ($ans -eq 'Yes') { Start-Launcher '3 - DUNG BOT.cmd' } } },",
+    "  @{ Text = 'Hướng dẫn'; Bold = $false; Click = { Start-Process notepad.exe -ArgumentList ('\"' + (Join-Path $dir '0 - DOC TRUOC.txt') + '\"') } }",
+    ')',
+    '$y += 14',
+    'foreach ($b in $buttons) {',
+    '  $btn = New-Object System.Windows.Forms.Button',
+    '  $btn.Text = $b.Text',
+    "  if ($b.Bold) { $btn.Font = New-Object System.Drawing.Font('Segoe UI Semibold', 10) }",
+    '  $btn.Size = New-Object System.Drawing.Size(300, 38)',
+    '  $btn.Location = New-Object System.Drawing.Point(20, $y)',
+    '  $btn.Add_Click($b.Click)',
+    '  $form.Controls.Add($btn)',
+    '  $y += 46',
+    '}',
+    '',
+    '$timer = New-Object System.Windows.Forms.Timer',
+    '$timer.Interval = 3000',
+    '$timer.Add_Tick({ Update-Status })',
+    '$form.Add_Shown({ Update-Status; $timer.Start() })',
+    '$form.Add_FormClosed({ $timer.Stop(); $mutex.ReleaseMutex() })',
+    '[System.Windows.Forms.Application]::Run($form)',
+  ];
+  return '﻿' + CRLF(lines.join('\n') + '\n');
+}
+
+/** What the Desktop icon runs: PowerShell with no console flash (trap 5), wherever the project is. */
+function buildBotPanelVbs() {
+  return CRLF(
+    'Set fso = CreateObject("Scripting.FileSystemObject")\n' +
+    'd = fso.GetParentFolderName(WScript.ScriptFullName)\n' +
+    'CreateObject("WScript.Shell").Run "powershell -NoProfile -ExecutionPolicy Bypass -STA -WindowStyle Hidden -File """ & d & "\\bot-panel.ps1""", 0, False\n',
+  );
+}
+
 /** All launcher files for a native Windows project, as { relativeName: content }. */
 function buildWindowsLaunchers({ projectDir, gatewayPort = 18789, routerPort = 20128, setupPort = 51789, gatewayToken = '', stateDir = '' }) {
   const opts = { projectDir, gatewayPort, routerPort, setupPort, gatewayToken, stateDir: stateDir || `${projectDir}\\.openclaw` };
   return {
+    'bot-panel.ps1': buildBotPanelPs1(opts),
+    'bot-panel.vbs': buildBotPanelVbs(),
     'run-hidden.vbs': buildRunHiddenVbs(),
     'start-9router.cmd': build9RouterCmd(opts),
     'gateway-start.cmd': buildGatewayCmd(opts),
@@ -240,9 +384,12 @@ function buildWindowsLaunchers({ projectDir, gatewayPort = 18789, routerPort = 2
   };
 }
 
-/** Which of the generated files belong on the Desktop rather than in the project folder. */
+/** The single Desktop shortcut (ASCII name: WScript.Shell CreateShortcut fails on Unicode names in PS 5.1). */
+const WINDOWS_PANEL_SHORTCUT = 'Bot OpenClaw.lnk';
+
+/** Loose copies older builds put on the Desktop; the panel replaces them, so they are removed. */
 const WINDOWS_DESKTOP_LAUNCHERS = ['0 - DOC TRUOC.txt', '1 - KHOI DONG BOT.cmd', '2 - MO GIAO DIEN.cmd', '3 - DUNG BOT.cmd'];
 
-const api = { buildWindowsLaunchers, WINDOWS_DESKTOP_LAUNCHERS };
+const api = { buildWindowsLaunchers, WINDOWS_DESKTOP_LAUNCHERS, WINDOWS_PANEL_SHORTCUT };
 if (typeof globalThis !== 'undefined') globalThis.__openclawWindowsLaunchers = api;
 if (typeof exports !== 'undefined') Object.assign(exports, api);
