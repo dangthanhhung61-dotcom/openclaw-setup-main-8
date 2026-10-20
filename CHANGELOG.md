@@ -25,6 +25,15 @@
   Setup's own; an owner's file with the same name is kept. The Desktop path is asked from Windows,
   so OneDrive-redirected Desktops get the icon too.
 
+### 🔗 Pointed at this repo
+
+- **Install command:** `npx github:dangthanhhung61-dotcom/openclaw-setup-main-8`. README, SETUP and the
+  clone command follow. `npx create-openclaw-bot` on npm is the upstream build, without these fixes.
+- **"Open UI" reopens the same build.** setup-ui.cmd always called the npm build, so a Setup started
+  from GitHub or a local folder came back as upstream on the next open. It now repeats the command
+  that started Setup.
+- **Version check and self-update follow this repo**, not upstream.
+
 
 ## [5.18.3] - 2026-10-16
 ### 🔧 Bots on native installs can send files again

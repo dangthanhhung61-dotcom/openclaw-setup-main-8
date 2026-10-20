@@ -25,6 +25,14 @@
   tạo; tệp riêng của chủ máy trùng tên được giữ nguyên. Desktop được hỏi từ Windows, nên máy dùng
   OneDrive cũng đặt đúng chỗ.
 
+### 🔗 Trỏ về repo này
+
+- **Lệnh cài:** `npx github:dangthanhhung61-dotcom/openclaw-setup-main-8`. README, SETUP và lệnh clone
+  đã đổi theo. `npx create-openclaw-bot` trên npm là bản gốc, không có các bản sửa ở đây.
+- **"Mở giao diện" mở lại đúng bản đang dùng.** Trước đây setup-ui.cmd luôn gọi bản npm, nên Setup cài
+  từ GitHub hay từ thư mục bị đổi sang bản gốc ở lần mở sau. Nay nó gọi lại đúng lệnh đã chạy Setup.
+- **Kiểm tra và cập nhật bản mới theo repo này**, không theo repo gốc.
+
 
 ## [5.18.3] - 2026-10-16
 ### 🔧 Bot cài trực tiếp trên máy gửi được tệp trở lại

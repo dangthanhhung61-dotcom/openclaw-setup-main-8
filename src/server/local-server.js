@@ -575,6 +575,8 @@ Do not call \`search-tool.js\`; browser-automation does not own search. Use \`we
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const WEB_DIR = resolve(__dirname, '../web');
+// Where this build is published. It is not on npm: `create-openclaw-bot` there is the upstream build.
+const SETUP_GITHUB_REPO = 'dangthanhhung61-dotcom/openclaw-setup-main-8';
 const SETUP_VERSION = (() => { try { return JSON.parse(fs.readFileSync(resolve(__dirname, '../../package.json'), 'utf8')).version || '0.0.0'; } catch { return '0.0.0'; } })();
 let latestSetupVersionCache = SETUP_VERSION;
 let isFetchingLatestSetup = false;
@@ -585,8 +587,9 @@ async function fetchLatestSetupVersionBg() {
   try {
     // Distribution is GitHub (not npm) - read the version straight from main so the
     // "latest" reflects `npx github:…`, not the stale last-published npm release.
+    // THIS repo, not upstream: an upstream bump would offer an "update" to a build without the fixes here.
     const resp = await fetch(
-      'https://raw.githubusercontent.com/tuanminhhole/openclaw-setup/main/package.json',
+      `https://raw.githubusercontent.com/${SETUP_GITHUB_REPO}/main/package.json`,
       { signal: AbortSignal.timeout(4000), headers: { 'Cache-Control': 'no-cache' } },
     );
     if (resp.ok) {
@@ -4615,12 +4618,46 @@ async function writeWindowsLaunchers(projectDir, gatewayPort, routerPort) {
     setupPort: activeUiPort || 51789,
     gatewayToken: gatewayAuthToken(projectDir),
     stateDir,
+    setupCommand: setupRelaunchCommand(),
   });
   for (const [name, content] of Object.entries(files)) {
     await fsp.writeFile(join(projectDir, name), content, 'utf8');
   }
   await fsp.copyFile(join(WEB_DIR, 'bot.ico'), join(projectDir, 'bot.ico')).catch(() => {});
   await placeWindowsPanelShortcut(projectDir, files).catch((e) => sendLog(`[native] biểu tượng Desktop: ${e.message}`));
+}
+
+/** The spec npx was given for THIS Setup (recorded in the npx cache dir), or '' when npx did not run it. */
+function npxSetupSpec() {
+  const npxRoot = resolve(__dirname, '../cli.js').match(/^(.*[\\/]_npx[\\/][^\\/]+)[\\/]/)?.[1];
+  if (!npxRoot) return '';
+  try { return String(JSON.parse(readFileSync(join(npxRoot, 'package.json'), 'utf8'))?.dependencies?.['create-openclaw-bot'] || ''); } catch { return ''; }
+}
+
+/** What an npx-run Setup updates from: the same GitHub spec it was started with, else the npm build. */
+function npxUpdateSpec() {
+  const spec = npxSetupSpec();
+  // Same refusal as setupRelaunchCommand: the relaunch runs npx through a shell on Windows.
+  return /^(github:|git\+|git:|https?:)/i.test(spec) && !/["%&|<>^\s]/.test(spec) ? spec : 'create-openclaw-bot@latest';
+}
+
+/**
+ * The command setup-ui.cmd ("2 - MO GIAO DIEN", the panel's "Mở giao diện quản trị") runs to bring
+ * THIS Setup back, or '' for the default `npx --yes create-openclaw-bot` (the npm build).
+ *
+ * Always calling the npm build swapped a Setup started any other way for the upstream build at the
+ * next "Mở giao diện": its fixes vanished (C:\bot, 18/10/2026 - Setup installed with
+ * `npx github:<fork>`, the dashboard came back as npm 5.18.3). So:
+ *   • run from the npx cache → npx again with the SAME git/GitHub spec;
+ *   • anything else (local checkout, global npm install) → this very cli.js.
+ * A spec that could break out of the .cmd line is refused rather than escaped.
+ */
+function setupRelaunchCommand() {
+  const cliPath = resolve(__dirname, '../cli.js');
+  if (!/[\\/]_npx[\\/]/.test(cliPath)) return existsSync(cliPath) ? `"${process.execPath}" "${cliPath}"` : '';
+  const spec = npxSetupSpec();
+  if (!/^(github:|git\+|git:|https?:)/i.test(spec) || /["%&|<>^\s]/.test(spec)) return '';
+  return `npx --yes ${spec}`;
 }
 
 /**
@@ -7767,8 +7804,9 @@ async function handler(req, res, rootProjectDir) {
             // browser is still watching the log. Leaving it to the relaunch meant the download
             // happened with no server running and nothing to report progress to, so a slow link
             // looked exactly like a crash.
-            sendLog('[update-setup] Tải bản mới từ npm…');
-            await run('npm', ['cache', 'add', 'create-openclaw-bot@latest'], { cwd: installerDir })
+            const pkg = npxUpdateSpec();
+            sendLog(`[update-setup] Tải bản mới (${pkg})…`);
+            await run('npm', ['cache', 'add', pkg], { cwd: installerDir })
               .catch((e) => sendLog(`[update-setup] npm cache add: ${e.message}`));
           }
           restartInstaller();
@@ -8009,7 +8047,7 @@ function restartInstaller() {
         // browser gives up reconnecting, and a different artifact from the one they installed.
         const win = process.platform === 'win32';
         bin = win ? 'npx.cmd' : 'npx';
-        spawnArgs = ['--yes', 'create-openclaw-bot@latest', ...uiArgs];
+        spawnArgs = ['--yes', npxUpdateSpec(), ...uiArgs];
         opts = { detached: true, stdio: relaunchStdio, shell: win };
       } else {
         // Local clone / file install - re-run this entry (git pull already updated it).

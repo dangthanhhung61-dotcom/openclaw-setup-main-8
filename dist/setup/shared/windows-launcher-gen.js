@@ -108,7 +108,7 @@ function buildGatewayCmd({ projectDir, gatewayPort, stateDir }) {
   );
 }
 
-function buildSetupUiCmd({ projectDir, setupPort }) {
+function buildSetupUiCmd({ projectDir, setupPort, setupCommand }) {
   return CRLF(
     '@echo off\n' +
     'rem Ten tep nhat ky kem gio, de lan chay sau khong dung vao tep dang bi giu (trap 3).\n' +
@@ -119,7 +119,10 @@ function buildSetupUiCmd({ projectDir, setupPort }) {
     // packages ... Ok to proceed? (y)". The launcher runs hidden, so nobody can answer it: the
     // window sits there forever and the dashboard simply never opens. Measured on a customer
     // machine, where it looked like the tunnel was broken rather than a prompt waiting offscreen.
-    `call npx --yes create-openclaw-bot --host=127.0.0.1 --port=${setupPort} --no-open --project-dir=${projectDir}` +
+    // Relaunch the SAME Setup that wrote this file (local-server setupRelaunchCommand). Always calling
+    // the npm build swapped a Setup started from GitHub or a local folder for the upstream build at
+    // the next "Mo giao dien", and its fixes vanished.
+    `call ${setupCommand || 'npx --yes create-openclaw-bot'} --host=127.0.0.1 --port=${setupPort} --no-open --project-dir=${projectDir}` +
     ` > "${projectDir}\\setup-ui-%T%.log" 2>&1\n`,
   );
 }
@@ -367,8 +370,8 @@ function buildBotPanelVbs() {
 }
 
 /** All launcher files for a native Windows project, as { relativeName: content }. */
-function buildWindowsLaunchers({ projectDir, gatewayPort = 18789, routerPort = 20128, setupPort = 51789, gatewayToken = '', stateDir = '' }) {
-  const opts = { projectDir, gatewayPort, routerPort, setupPort, gatewayToken, stateDir: stateDir || `${projectDir}\\.openclaw` };
+function buildWindowsLaunchers({ projectDir, gatewayPort = 18789, routerPort = 20128, setupPort = 51789, gatewayToken = '', stateDir = '', setupCommand = '' }) {
+  const opts = { projectDir, gatewayPort, routerPort, setupPort, gatewayToken, setupCommand, stateDir: stateDir || `${projectDir}\\.openclaw` };
   return {
     'bot-panel.ps1': buildBotPanelPs1(opts),
     'bot-panel.vbs': buildBotPanelVbs(),

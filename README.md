@@ -7,10 +7,9 @@
 *Run one command → open the dashboard → your bot is live. Windows, macOS, Linux, VPS - Docker-powered, auto-installed for you.*
 
 <p align="center">
-  <a href="https://github.com/tuanminhhole/openclaw-setup/releases"><img src="https://img.shields.io/badge/RELEASE-v5.18.3-0EA5E9?style=for-the-badge" alt="Version 5.18.3" /></a>
-  <a href="https://github.com/tuanminhhole/openclaw-setup?tab=MIT-1-ov-file"><img src="https://img.shields.io/badge/LICENSE-MIT-success?style=for-the-badge" alt="MIT License" /></a>
-  <a href="https://www.npmjs.com/package/create-openclaw-bot"><img src="https://img.shields.io/npm/v/create-openclaw-bot?style=for-the-badge&label=CLI&color=2563EB&logo=npm&logoColor=white" alt="NPM Version" /></a>
-  <a href="https://github.com/tuanminhhole/openclaw-setup/stargazers"><img src="https://img.shields.io/github/stars/tuanminhhole/openclaw-setup?style=for-the-badge&color=eab308&logo=github&logoColor=white" alt="GitHub Stars" /></a>
+  <a href="https://github.com/dangthanhhung61-dotcom/openclaw-setup-main-8/releases"><img src="https://img.shields.io/badge/RELEASE-v5.18.3-0EA5E9?style=for-the-badge" alt="Version 5.18.3" /></a>
+  <a href="https://github.com/dangthanhhung61-dotcom/openclaw-setup-main-8?tab=MIT-1-ov-file"><img src="https://img.shields.io/badge/LICENSE-MIT-success?style=for-the-badge" alt="MIT License" /></a>
+  <a href="https://github.com/dangthanhhung61-dotcom/openclaw-setup-main-8/stargazers"><img src="https://img.shields.io/github/stars/dangthanhhung61-dotcom/openclaw-setup-main-8?style=for-the-badge&color=eab308&logo=github&logoColor=white" alt="GitHub Stars" /></a>
 </p>
 
 [![Tiếng Việt](https://flagcdn.com/20x15/vn.png) Tiếng Việt](README.vi.md) · ![English](https://flagcdn.com/20x15/gb.png) **English**
@@ -18,9 +17,9 @@
 > 💡 Open-source & free. A management dashboard that automates 100% of project scaffolding, deployment, and control for AI bots on **Telegram · Zalo · Facebook Messenger** (Discord & Lark soon) - set up in minutes, no coding needed.
 
 <p align="center" style="margin: 24px 0;">
-  <img src="https://raw.githubusercontent.com/tuanminhhole/openclaw-setup/main/docs/openclaw-setup.png" alt="OpenClaw Setup" width="90%" style="border-radius: 8px; border: 1px solid #333; margin-bottom: 16px;" />
-  <img src="https://raw.githubusercontent.com/tuanminhhole/openclaw-setup/main/docs/dashboard.png" alt="OpenClaw Dashboard" width="90%" style="border-radius: 8px; border: 1px solid #333; margin-bottom: 16px;" />
-  <img src="https://raw.githubusercontent.com/tuanminhhole/openclaw-setup/main/docs/bot.png" alt="OpenClaw Bot in Action" width="90%" style="border-radius: 8px; border: 1px solid #333;" />
+  <img src="https://raw.githubusercontent.com/dangthanhhung61-dotcom/openclaw-setup-main-8/main/docs/openclaw-setup.png" alt="OpenClaw Setup" width="90%" style="border-radius: 8px; border: 1px solid #333; margin-bottom: 16px;" />
+  <img src="https://raw.githubusercontent.com/dangthanhhung61-dotcom/openclaw-setup-main-8/main/docs/dashboard.png" alt="OpenClaw Dashboard" width="90%" style="border-radius: 8px; border: 1px solid #333; margin-bottom: 16px;" />
+  <img src="https://raw.githubusercontent.com/dangthanhhung61-dotcom/openclaw-setup-main-8/main/docs/bot.png" alt="OpenClaw Bot in Action" width="90%" style="border-radius: 8px; border: 1px solid #333;" />
 </p>
 
 </div>
@@ -227,42 +226,36 @@
 Open your terminal and run this single command (works on macOS, Linux & Windows - needs Node.js 24 LTS):
 
 ```bash
-npx create-openclaw-bot
+npx github:dangthanhhung61-dotcom/openclaw-setup-main-8
 ```
 
-It downloads the wizard, starts the local server, and opens the Setup UI in your browser at **http://127.0.0.1:51789**.
+It downloads Setup straight from this GitHub repo, starts the local server, and opens the Setup UI in your browser at **http://127.0.0.1:51789**.
 
-### 2️⃣ Method 2 - Run the newest GitHub source
-
-Use this if you specifically want the newest code directly from GitHub:
-
-```bash
-npx github:tuanminhhole/openclaw-setup
-```
-
+> This build is **not on npm**: `npx create-openclaw-bot` installs the upstream 5.18.3 build, without this repo's Windows fixes.
+>
 > **Git is required for this method.** Install [Git](https://git-scm.com/downloads) and make sure the `git` command works in your terminal first; otherwise npm cannot download the GitHub repository.
 
-### 3️⃣ Method 3 - Manual clone (for developers)
+### 2️⃣ Method 2 - Manual clone (for developers)
 
 For contributors who want the full source. Run each line in order:
 
 ```bash
-git clone https://github.com/tuanminhhole/openclaw-setup.git
-cd openclaw-setup
+git clone https://github.com/dangthanhhung61-dotcom/openclaw-setup-main-8.git
+cd openclaw-setup-main-8
 npm install
 npm start
 ```
 
 Then open **http://127.0.0.1:51789** if the browser doesn't open by itself.
 
-> ⚠️ `npm install` / `npm start` only work **inside the cloned `openclaw-setup` folder**. If you used either npx method, simply run the same npx command again when you want to reopen Setup.
+> ⚠️ `npm install` / `npm start` only work **inside the cloned `openclaw-setup-main-8` folder**. If you used the npx method, simply run the same npx command again when you want to reopen Setup.
 
 ### 🔁 Reopen the UI later
 
-Run the recommended command again. Setup detects and reopens your existing project:
+Run the recommended command again (on Windows: open the **Bot OpenClaw** icon on the Desktop and press **Mở giao diện quản trị**). Setup detects and reopens your existing project:
 
 ```bash
-npx create-openclaw-bot
+npx github:dangthanhhung61-dotcom/openclaw-setup-main-8
 ```
 
 ### ⬆️ Update to the newest version
@@ -373,8 +366,8 @@ Yes. You can edit the config JSON directly via the integrated File Editor in the
 
 <div align="center">
 
-<a href="https://github.com/tuanminhhole/openclaw-setup/stargazers"><img src="https://img.shields.io/github/stars/tuanminhhole/openclaw-setup?style=for-the-badge&logo=github&color=eab308" alt="GitHub Stars" /></a>
-<a href="https://github.com/tuanminhhole/openclaw-setup/forks"><img src="https://img.shields.io/github/forks/tuanminhhole/openclaw-setup?style=for-the-badge&logo=github&color=0ea5e9" alt="GitHub Forks" /></a>
+<a href="https://github.com/dangthanhhung61-dotcom/openclaw-setup-main-8/stargazers"><img src="https://img.shields.io/github/stars/dangthanhhung61-dotcom/openclaw-setup-main-8?style=for-the-badge&logo=github&color=eab308" alt="GitHub Stars" /></a>
+<a href="https://github.com/dangthanhhung61-dotcom/openclaw-setup-main-8/forks"><img src="https://img.shields.io/github/forks/dangthanhhung61-dotcom/openclaw-setup-main-8?style=for-the-badge&logo=github&color=0ea5e9" alt="GitHub Forks" /></a>
 
 </div>
 
@@ -401,7 +394,7 @@ Suggestions and PRs are always welcome. If this saved you time, please ⭐ the r
 Companion repos to build a complete, self-running AI assistant:
 
 **🚀 Setup & framework**
-- [openclaw-setup](https://github.com/tuanminhhole/openclaw-setup) - *(this repo)* Set up free AI bots with OpenClaw + 9Router (Telegram/Zalo/Messenger, Docker)
+- [openclaw-setup](https://github.com/tuanminhhole/openclaw-setup) - *(upstream of this repo)* Set up free AI bots with OpenClaw + 9Router (Telegram/Zalo/Messenger, Docker)
 - [vietbrain](https://github.com/tuanminhhole/vietbrain) - Vietnamese "Second Brain" framework for Obsidian (AI-ready)
 
 **🔌 Plugins (runtime)**

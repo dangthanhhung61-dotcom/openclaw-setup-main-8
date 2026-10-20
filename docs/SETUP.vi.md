@@ -11,7 +11,7 @@ Bạn có hai cách để bắt đầu:
 ### Cách 1: Sử dụng lệnh NPX (Khuyên dùng)
 Không cần tải trước mã nguồn, chỉ cần mở terminal và chạy lệnh:
 ```bash
-npx create-openclaw-bot
+npx github:dangthanhhung61-dotcom/openclaw-setup-main-8
 ```
 Hệ thống sẽ khởi tạo máy chủ cục bộ và tự động mở trình duyệt hiển thị giao diện cài đặt (mặc định tại `http://127.0.0.1:51789`).
 
